@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dailekhi Mart — Admin Dashboard</title>
+<meta name="robots" content="noindex, nofollow" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          leaf:   { 50:'#eef7ef', 100:'#d7ebd9', 200:'#aed7b3', 300:'#7fbf88', 400:'#4a9d57', 500:'#2c7c3a', 600:'#1f6630', 700:'#185328', 800:'#143f1f', 900:'#0F5132', 950:'#0a3320' },
+          mango:  { 50:'#fff8e8', 100:'#ffecc2', 200:'#ffd98a', 300:'#ffc452', 400:'#fbb02e', 500:'#F4A300', 600:'#d68a00', 700:'#ad6e00' },
+          tomato: { 50:'#fdecec', 100:'#fad3d4', 500:'#E63946', 600:'#cf2532', 700:'#ab1d28' },
+          cream:  '#FFF8EC',
+          paper:  '#FFFDF8',
+          char:   { 600:'#525c56', 700:'#3a423d', 800:'#283128', 900:'#1F2A24' },
+        },
+        fontFamily: {
+          display: ['Fraunces', 'serif'],
+          body: ['Inter', 'sans-serif'],
+          mono: ['Space Mono', 'monospace'],
+        },
+        boxShadow: {
+          tag: '2px 3px 0 0 rgba(15,81,50,0.15)',
+          card: '0 4px 18px -4px rgba(15,81,50,0.12)',
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  body { font-family: 'Inter', sans-serif; background: #FFF8EC; }
+  .font-display { font-family: 'Fraunces', serif; }
+  .font-mono { font-family: 'Space Mono', monospace; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: #aed7b3; border-radius: 4px; }
+  .focus-ring:focus-visible { outline: 3px solid #F4A300; outline-offset: 2px; }
+  .tab-active { background: #0F5132; color: #FFF8EC; }
+  .tab-inactive { background: transparent; color: #3a423d; }
+  .scale-in { animation: scaleIn 180ms ease; }
+  @keyframes scaleIn { from { opacity:0; transform: scale(0.97); } to { opacity:1; transform: scale(1); } }
+  .status-pill { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.65rem; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+
+<body class="text-char-900 antialiased">
+
+<!-- ============ LOGIN GATE ============ -->
+<div id="loginScreen" class="min-h-screen grid place-items-center px-4">
+  <div class="bg-paper rounded-3xl shadow-card border-2 border-leaf-100 max-w-sm w-full p-8 scale-in">
+    <div class="flex items-center gap-2.5 mb-6 justify-center">
+      <span class="grid place-items-center w-10 h-10 rounded-xl bg-leaf-900 text-mango-400 font-display text-xl font-bold rotate-[-3deg]">D</span>
+      <div>
+        <p class="font-display font-semibold text-lg text-leaf-950 leading-none">Dailekhi Mart</p>
+        <p class="text-[0.65rem] font-mono tracking-widest text-mango-600 uppercase">Admin Panel</p>
+      </div>
+    </div>
+
+    <form id="loginForm">
+      <label for="loginPassword" class="block text-sm font-semibold text-char-800 mb-1.5">Admin Password</label>
+      <input id="loginPassword" type="password" required placeholder="Enter password" autocomplete="current-password"
+        class="w-full px-4 py-3 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring mb-1" />
+      <p id="loginError" class="hidden text-tomato-600 text-xs mb-3">Incorrect password. Please try again.</p>
+      <button type="submit" class="w-full bg-leaf-900 hover:bg-leaf-800 text-cream font-semibold py-3 rounded-full mt-3 transition-colors focus-ring">
+        Log In
+      </button>
+    </form>
+
+    <div class="mt-6 pt-5 border-t border-dashed border-leaf-200">
+      <p class="text-xs text-char-700/70 leading-relaxed">
+        Default password: <code class="bg-leaf-50 px-1.5 py-0.5 rounded font-mono text-leaf-800">dailekhi123</code><br/>
+        You can change this anytime from <strong>Settings → Security</strong> once logged in.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD (hidden until logged in) ============ -->
+<div id="dashboard" class="hidden min-h-screen">
+
+  <!-- TOP BAR -->
+  <header class="sticky top-0 z-30 bg-paper/95 backdrop-blur border-b border-leaf-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span class="grid place-items-center w-9 h-9 rounded-lg bg-leaf-900 text-mango-400 font-display font-bold rotate-[-3deg]">D</span>
+        <div>
+          <p class="font-display font-semibold text-leaf-950 leading-none">Dailekhi Mart</p>
+          <p class="text-[0.6rem] font-mono tracking-widest text-mango-600 uppercase">Admin Dashboard</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono text-leaf-700 bg-leaf-50 px-3 py-1.5 rounded-full">
+          <span class="w-1.5 h-1.5 rounded-full bg-leaf-600"></span> Synced to this browser
+        </span>
+        <button id="logoutBtn" class="text-sm font-semibold text-tomato-600 hover:text-tomato-700 px-3 py-2 focus-ring rounded-lg">Log Out</button>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <nav class="max-w-7xl mx-auto px-4 sm:px-6 flex gap-1.5 overflow-x-auto pb-2">
+      <button data-tab="overview" class="admin-tab font-semibold text-sm px-4 py-2 rounded-full whitespace-nowrap transition-colors focus-ring">📊 Overview</button>
+      <button data-tab="products" class="admin-tab font-semibold text-sm px-4 py-2 rounded-full whitespace-nowrap transition-colors focus-ring">🛒 Products</button>
+      <button data-tab="orders" class="admin-tab font-semibold text-sm px-4 py-2 rounded-full whitespace-nowrap transition-colors focus-ring">📦 Orders</button>
+      <button data-tab="settings" class="admin-tab font-semibold text-sm px-4 py-2 rounded-full whitespace-nowrap transition-colors focus-ring">⚙️ Settings</button>
+    </nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+
+    <!-- ============ OVERVIEW TAB ============ -->
+    <section id="tab-overview" class="admin-panel">
+      <h2 class="font-display text-2xl font-semibold text-leaf-950 mb-6">Store Overview</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div class="bg-paper rounded-2xl border-2 border-leaf-100 p-5 shadow-card">
+          <p class="text-2xl font-display font-bold text-leaf-900" id="statProducts">0</p>
+          <p class="text-xs text-char-700/70 mt-1">Active Products</p>
+        </div>
+        <div class="bg-paper rounded-2xl border-2 border-leaf-100 p-5 shadow-card">
+          <p class="text-2xl font-display font-bold text-leaf-900" id="statOrders">0</p>
+          <p class="text-xs text-char-700/70 mt-1">Total Orders</p>
+        </div>
+        <div class="bg-paper rounded-2xl border-2 border-leaf-100 p-5 shadow-card">
+          <p class="text-2xl font-display font-bold text-leaf-900" id="statRevenue">Rs. 0</p>
+          <p class="text-xs text-char-700/70 mt-1">Total Revenue</p>
+        </div>
+        <div class="bg-paper rounded-2xl border-2 border-leaf-100 p-5 shadow-card">
+          <p class="text-2xl font-display font-bold text-leaf-900" id="statPending">0</p>
+          <p class="text-xs text-char-700/70 mt-1">Pending Orders</p>
+        </div>
+      </div>
+
+      <div class="bg-paper rounded-2xl border-2 border-leaf-100 shadow-card p-5">
+        <h3 class="font-display text-lg font-semibold text-leaf-950 mb-4">Recent Orders</h3>
+        <div id="recentOrdersList" class="space-y-3"></div>
+        <p id="noRecentOrders" class="hidden text-center text-char-700/60 py-8 text-sm">No orders yet. Orders placed on the storefront will appear here.</p>
+      </div>
+    </section>
+
+    <!-- ============ PRODUCTS TAB ============ -->
+    <section id="tab-products" class="admin-panel hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <h2 class="font-display text-2xl font-semibold text-leaf-950">Manage Products</h2>
+        <button id="addProductBtn" class="bg-leaf-900 hover:bg-leaf-800 text-cream font-semibold px-5 py-2.5 rounded-full text-sm transition-colors focus-ring">+ Add Product</button>
+      </div>
+
+      <div class="flex gap-3 mb-5">
+        <input id="productSearchInput" type="text" placeholder="Search products…" class="flex-1 px-4 py-2.5 rounded-full border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring text-sm" />
+        <select id="productCatFilter" class="px-4 py-2.5 rounded-full border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring text-sm bg-paper">
+          <option value="all">All Categories</option>
+          <option value="essentials">Daily Essentials</option>
+          <option value="produce">Fresh Produce</option>
+          <option value="beverages">Beverages</option>
+          <option value="snacks">Snacks &amp; Packaged Foods</option>
+        </select>
+      </div>
+
+      <div class="bg-paper rounded-2xl border-2 border-leaf-100 shadow-card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-leaf-50 text-char-800 text-left">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Product</th>
+                <th class="px-4 py-3 font-semibold">Category</th>
+                <th class="px-4 py-3 font-semibold">Price</th>
+                <th class="px-4 py-3 font-semibold">Sale Price</th>
+                <th class="px-4 py-3 font-semibold">Status</th>
+                <th class="px-4 py-3 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody" class="divide-y divide-leaf-100"></tbody>
+          </table>
+        </div>
+        <p id="noProductsFound" class="hidden text-center text-char-700/60 py-10 text-sm">No products match your filters.</p>
+      </div>
+    </section>
+
+    <!-- ============ ORDERS TAB ============ -->
+    <section id="tab-orders" class="admin-panel hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <h2 class="font-display text-2xl font-semibold text-leaf-950">Orders</h2>
+        <select id="orderStatusFilter" class="px-4 py-2.5 rounded-full border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring text-sm bg-paper">
+          <option value="all">All Statuses</option>
+          <option value="Order Received">Order Received</option>
+          <option value="Preparing Your Groceries">Preparing</option>
+          <option value="Out for Delivery">Out for Delivery</option>
+          <option value="Delivered">Delivered</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div id="ordersList" class="space-y-4"></div>
+      <p id="noOrdersFound" class="hidden text-center text-char-700/60 py-16 text-sm">No orders found.</p>
+    </section>
+
+    <!-- ============ SETTINGS TAB ============ -->
+    <section id="tab-settings" class="admin-panel hidden">
+      <h2 class="font-display text-2xl font-semibold text-leaf-950 mb-6">Store Settings</h2>
+
+      <form id="settingsForm" class="space-y-8 max-w-2xl">
+
+        <div class="bg-paper rounded-2xl border-2 border-leaf-100 shadow-card p-6">
+          <h3 class="font-display text-lg font-semibold text-leaf-950 mb-4">Store Identity</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Store Name</label>
+              <input id="setStoreName" type="text" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Hero Title (Homepage Banner)</label>
+              <input id="setHeroTitle" type="text" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Hero Subtitle</label>
+              <textarea id="setHeroSubtitle" rows="2" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring resize-none"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-paper rounded-2xl border-2 border-leaf-100 shadow-card p-6">
+          <h3 class="font-display text-lg font-semibold text-leaf-950 mb-4">Contact &amp; Location</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Phone Number</label>
+              <input id="setPhone" type="text" required placeholder="986-6939130" class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Address</label>
+              <input id="setAddress" type="text" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Opening Hours</label>
+              <input id="setHours" type="text" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-paper rounded-2xl border-2 border-leaf-100 shadow-card p-6">
+          <h3 class="font-display text-lg font-semibold text-leaf-950 mb-4">Delivery Settings</h3>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Delivery Fee (Rs.)</label>
+              <input id="setDeliveryFee" type="number" min="0" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Free Delivery Above (Rs.)</label>
+              <input id="setFreeThreshold" type="number" min="0" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-paper rounded-2xl border-2 border-tomato-100 shadow-card p-6">
+          <h3 class="font-display text-lg font-semibold text-leaf-950 mb-4">Security</h3>
+          <div>
+            <label class="block text-sm font-semibold text-char-800 mb-1.5">Change Admin Password</label>
+            <input id="setNewPassword" type="password" placeholder="Leave blank to keep current password" class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button type="submit" class="bg-leaf-900 hover:bg-leaf-800 text-cream font-semibold px-6 py-3 rounded-full transition-colors focus-ring">Save Settings</button>
+          <span id="settingsSavedMsg" class="hidden text-leaf-700 text-sm font-semibold">✓ Saved!</span>
+        </div>
+      </form>
+
+      <div class="mt-10 max-w-2xl">
+        <div class="bg-tomato-50 border-2 border-tomato-100 rounded-2xl p-6">
+          <h3 class="font-display text-lg font-semibold text-tomato-700 mb-2">Danger Zone</h3>
+          <p class="text-sm text-char-700 mb-4">Reset store settings to defaults and permanently delete all order history. Products are not affected — delete those individually from the Products tab. This cannot be undone.</p>
+          <button id="resetDataBtn" class="bg-tomato-500 hover:bg-tomato-600 text-white font-semibold px-5 py-2.5 rounded-full text-sm transition-colors focus-ring">Reset All Data</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ PRODUCT EDITOR MODAL ============ -->
+<div id="productModalOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 grid place-items-center p-4">
+  <div class="bg-paper rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 scale-in">
+    <div class="flex items-center justify-between mb-5">
+      <h3 id="productModalTitle" class="font-display text-xl font-semibold text-leaf-950">Add Product</h3>
+      <button id="closeProductModal" class="grid place-items-center w-9 h-9 rounded-full hover:bg-leaf-50 focus-ring">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <form id="productForm" class="space-y-4">
+      <input type="hidden" id="prodId" />
+      <div>
+        <label class="block text-sm font-semibold text-char-800 mb-1.5">Product Name</label>
+        <input id="prodName" type="text" required placeholder="e.g. Basmati Rice 5kg" class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-char-800 mb-1.5">Category</label>
+          <select id="prodCat" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring bg-paper">
+            <option value="essentials">Daily Essentials</option>
+            <option value="produce">Fresh Produce</option>
+            <option value="beverages">Beverages</option>
+            <option value="snacks">Snacks &amp; Packaged Foods</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-char-800 mb-1.5">Emoji Icon</label>
+          <input id="prodEmoji" type="text" maxlength="4" placeholder="🍚" class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-semibold text-char-800 mb-1.5">Original Price (Rs.)</label>
+          <input id="prodPrice" type="number" min="0" step="0.01" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-char-800 mb-1.5">Sale Price (Rs.)</label>
+          <input id="prodSale" type="number" min="0" step="0.01" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-char-800 mb-1.5">Product Image</label>
+        <div class="flex items-center gap-3 mb-2">
+          <img id="prodImgPreview" src="" alt="" class="w-16 h-16 rounded-lg object-cover border-2 border-leaf-100 hidden" />
+          <button type="button" id="cloudinaryUploadBtn" class="bg-mango-400 hover:bg-mango-500 text-leaf-950 font-semibold text-sm px-4 py-2.5 rounded-full transition-colors focus-ring">
+            📷 Upload to Cloudinary
+          </button>
+          <span id="uploadingMsg" class="hidden text-xs text-char-700/70 font-medium">Uploading…</span>
+        </div>
+        <input id="prodImg" type="text" required placeholder="https://images.unsplash.com/… or upload above" class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring text-xs" />
+        <p class="text-xs text-char-700/60 mt-1">Upload a photo or paste an image URL directly.</p>
+      </div>
+      <label class="flex items-center gap-2.5 cursor-pointer">
+        <input id="prodActive" type="checkbox" class="w-4 h-4" checked />
+        <span class="text-sm font-semibold text-char-800">Visible on storefront (active)</span>
+      </label>
+
+      <button type="submit" class="w-full bg-leaf-900 hover:bg-leaf-800 text-cream font-semibold py-3 rounded-full mt-2 transition-colors focus-ring">Save Product</button>
+    </form>
+  </div>
+</div>
+
+<!-- ============ ORDER DETAIL MODAL ============ -->
+<div id="orderModalOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 grid place-items-center p-4">
+  <div class="bg-paper rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 scale-in font-mono text-sm">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-display text-xl font-semibold text-leaf-950 font-body">🧾 Order Details</h3>
+      <button id="closeOrderModal" class="grid place-items-center w-9 h-9 rounded-full hover:bg-leaf-50 focus-ring">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div id="orderModalBody"></div>
+  </div>
+</div>
+
+<!-- toast -->
+<div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 bg-leaf-950 text-cream font-medium text-sm px-5 py-3 rounded-full shadow-card z-[80] whitespace-nowrap"></div>
+
+<!-- confirm dialog -->
+<div id="confirmOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] grid place-items-center p-4">
+  <div class="bg-paper rounded-3xl max-w-xs w-full p-6 text-center scale-in">
+    <p id="confirmMessage" class="text-char-800 font-medium mb-5">Are you sure?</p>
+    <div class="flex gap-3">
+      <button id="confirmCancel" class="flex-1 border-2 border-leaf-200 hover:bg-leaf-50 text-char-800 font-semibold py-2.5 rounded-full transition-colors focus-ring">Cancel</button>
+      <button id="confirmOk" class="flex-1 bg-tomato-500 hover:bg-tomato-600 text-white font-semibold py-2.5 rounded-full transition-colors focus-ring">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== SUPABASE SETUP (must match index.html) ===================== */
+// 🔧 PASTE YOUR SUPABASE PROJECT URL AND ANON KEY HERE 🔧
+const SUPABASE_URL = "https://wzfvucgabbkrblrwmgia.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6ZnZ1Y2dhYmJrcmJscndtZ2lhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5MDQ1NDEsImV4cCI6MjA5NzQ4MDU0MX0.1tI61zYKnw9_d4OMSjt6PE5b7a84DyEeq0-iXv66xPk";
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ===================== CLOUDINARY SETUP ===================== */
+// 🔧 PASTE YOUR CLOUDINARY CLOUD NAME AND UNSIGNED UPLOAD PRESET HERE 🔧
+const CLOUDINARY_CLOUD_NAME = "dewz6ueuh";
+const CLOUDINARY_UPLOAD_PRESET = "dailekhi-mart";
+
+const LS_ADMIN_PW = "dkm_admin_pw";          // admin password stays local to this browser (see security note)
+const LS_ADMIN_SESSION = "dkm_admin_session";
+const DEFAULT_PASSWORD = "dailekhi123";
+
+const DEFAULT_SETTINGS = {
+  storeName: "Dailekhi Mart",
+  phone: "986-6939130",
+  address: "5MMR+4HH, Kohalpur 21904, Nepal",
+  hours: "Open 24 Hours / 7 Days a week",
+  deliveryFee: 50,
+  freeDeliveryThreshold: 1500,
+  heroTitle: "Your 24/7 Premium Grocery Partner in Kohalpur",
+  heroSubtitle: "Fresh produce, daily essentials, and instant delivery — right to your door, any hour of the day. Pay your way: eSewa, Khalti, Fonepay, or cash on delivery.",
+};
+
+function mapSettingsRow(row) {
+  if (!row) return DEFAULT_SETTINGS;
+  return {
+    storeName: row.store_name, phone: row.phone, address: row.address, hours: row.hours,
+    deliveryFee: Number(row.delivery_fee), freeDeliveryThreshold: Number(row.free_delivery_threshold),
+    heroTitle: row.hero_title, heroSubtitle: row.hero_subtitle,
+  };
+}
+function mapProductRow(row) {
+  return { id: row.id, name: row.name, cat: row.cat, price: Number(row.price), sale: Number(row.sale), img: row.img, emoji: row.emoji || "🛒", active: row.active };
+}
+
+/* ===================== UTIL ===================== */
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+const fmt = (n) => "Rs. " + Number(n || 0).toLocaleString("en-IN");
+
+// Admin password is kept in this browser's localStorage only (see security note in schema.sql).
+if (!localStorage.getItem(LS_ADMIN_PW)) localStorage.setItem(LS_ADMIN_PW, DEFAULT_PASSWORD);
+
+function showToast(msg) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.remove("hidden");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.add("hidden"), 2200);
+}
+
+let confirmCallback = null;
+function showConfirm(message, onConfirm) {
+  $("#confirmMessage").textContent = message;
+  $("#confirmOverlay").classList.remove("hidden");
+  confirmCallback = onConfirm;
+}
+$("#confirmCancel").addEventListener("click", () => $("#confirmOverlay").classList.add("hidden"));
+$("#confirmOk").addEventListener("click", () => {
+  $("#confirmOverlay").classList.add("hidden");
+  if (confirmCallback) confirmCallback();
+  confirmCallback = null;
+});
+
+/* ===================== LOGIN ===================== */
+function isLoggedIn() {
+  return sessionStorage.getItem(LS_ADMIN_SESSION) === "true";
+}
+function showDashboard() {
+  $("#loginScreen").classList.add("hidden");
+  $("#dashboard").classList.remove("hidden");
+  initDashboard();
+}
+function showLogin() {
+  $("#dashboard").classList.add("hidden");
+  $("#loginScreen").classList.remove("hidden");
+  $("#loginPassword").value = "";
+}
+
+$("#loginForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const entered = $("#loginPassword").value;
+  const stored = localStorage.getItem(LS_ADMIN_PW) || DEFAULT_PASSWORD;
+  if (entered === stored) {
+    sessionStorage.setItem(LS_ADMIN_SESSION, "true");
+    $("#loginError").classList.add("hidden");
+    showDashboard();
+  } else {
+    $("#loginError").classList.remove("hidden");
+  }
+});
+
+$("#logoutBtn").addEventListener("click", () => {
+  sessionStorage.removeItem(LS_ADMIN_SESSION);
+  showLogin();
+});
+
+/* ===================== TABS ===================== */
+function styleAdminTabs(activeTab) {
+  $$(".admin-tab").forEach(tab => {
+    const active = tab.dataset.tab === activeTab;
+    tab.className = "admin-tab font-semibold text-sm px-4 py-2 rounded-full whitespace-nowrap transition-colors focus-ring " + (active ? "tab-active" : "tab-inactive hover:bg-leaf-50");
+  });
+  $$(".admin-panel").forEach(panel => {
+    panel.classList.toggle("hidden", panel.id !== "tab-" + activeTab);
+  });
+}
+$$(".admin-tab").forEach(tab => {
+  tab.addEventListener("click", async () => {
+    styleAdminTabs(tab.dataset.tab);
+    if (tab.dataset.tab === "overview") await renderOverview();
+    if (tab.dataset.tab === "products") await renderProductsTable();
+    if (tab.dataset.tab === "orders") await renderOrdersList();
+    if (tab.dataset.tab === "settings") await loadSettingsForm();
+  });
+});
+
+/* ===================== OVERVIEW ===================== */
+async function renderOverview() {
+  const { data: products, error: prodErr } = await sb.from("products").select("*").eq("active", true);
+  const { data: orders, error: ordErr } = await sb.from("orders").select("*").order("created_at", { ascending: false });
+
+  if (prodErr) console.error(prodErr);
+  if (ordErr) console.error(ordErr);
+
+  const safeProducts = products || [];
+  const safeOrders = orders || [];
+
+  $("#statProducts").textContent = safeProducts.length;
+  $("#statOrders").textContent = safeOrders.length;
+  $("#statRevenue").textContent = fmt(safeOrders.reduce((sum, o) => sum + Number(o.total || 0), 0));
+  $("#statPending").textContent = safeOrders.filter(o => o.status === "Order Received" || o.status === "Preparing Your Groceries").length;
+
+  const recent = safeOrders.slice(0, 5);
+  $("#noRecentOrders").classList.toggle("hidden", recent.length > 0);
+  $("#recentOrdersList").innerHTML = recent.map(o => `
+    <div class="flex items-center justify-between border-b border-leaf-50 last:border-0 pb-3 last:pb-0">
+      <div>
+        <p class="font-mono font-semibold text-leaf-900 text-sm">${o.id}</p>
+        <p class="text-xs text-char-700/60">${o.customer_name || "Unknown"} · ${new Date(o.created_at).toLocaleDateString()}</p>
+      </div>
+      <div class="text-right">
+        <p class="font-semibold text-sm">${fmt(o.total)}</p>
+        <span class="status-pill ${statusColor(o.status)}">${o.status}</span>
+      </div>
+    </div>
+  `).join("");
+}
+
+function statusColor(status) {
+  switch (status) {
+    case "Order Received": return "bg-mango-100 text-mango-700";
+    case "Preparing Your Groceries": return "bg-leaf-100 text-leaf-700";
+    case "Out for Delivery": return "bg-blue-100 text-blue-700";
+    case "Delivered": return "bg-green-100 text-green-700";
+    case "Cancelled": return "bg-tomato-100 text-tomato-700";
+    default: return "bg-char-100 text-char-700";
+  }
+}
+
+/* ===================== PRODUCTS ===================== */
+let productSearch = "";
+let productCatFilter = "all";
+
+async function renderProductsTable() {
+  const { data, error } = await sb.from("products").select("*").order("id", { ascending: true });
+  if (error) { console.error(error); showToast("⚠️ Couldn't load products."); return; }
+
+  const filtered = data.filter(p => {
+    const matchSearch = p.name.toLowerCase().includes(productSearch.toLowerCase());
+    const matchCat = productCatFilter === "all" || p.cat === productCatFilter;
+    return matchSearch && matchCat;
+  });
+
+  $("#noProductsFound").classList.toggle("hidden", filtered.length > 0);
+
+  const catLabels = { essentials: "Daily Essentials", produce: "Fresh Produce", beverages: "Beverages", snacks: "Snacks & Packaged" };
+
+  $("#productsTableBody").innerHTML = filtered.map(p => `
+    <tr class="hover:bg-leaf-50/50">
+      <td class="px-4 py-3">
+        <div class="flex items-center gap-3">
+          <img src="${p.img}" alt="${p.name}" class="w-10 h-10 rounded-lg object-cover" onerror="this.style.display='none'" />
+          <span class="font-medium">${p.emoji || ""} ${p.name}</span>
+        </div>
+      </td>
+      <td class="px-4 py-3 text-char-700">${catLabels[p.cat] || p.cat}</td>
+      <td class="px-4 py-3 text-char-700/60 line-through">${fmt(p.price)}</td>
+      <td class="px-4 py-3 font-semibold text-leaf-800">${fmt(p.sale)}</td>
+      <td class="px-4 py-3">
+        <span class="status-pill ${p.active !== false ? 'bg-green-100 text-green-700' : 'bg-char-100 text-char-700'}">${p.active !== false ? 'Active' : 'Hidden'}</span>
+      </td>
+      <td class="px-4 py-3 text-right whitespace-nowrap">
+        <button data-id="${p.id}" class="edit-prod-btn text-leaf-700 hover:text-leaf-900 font-semibold text-xs mr-3 focus-ring">Edit</button>
+        <button data-id="${p.id}" class="delete-prod-btn text-tomato-600 hover:text-tomato-700 font-semibold text-xs focus-ring">Delete</button>
+      </td>
+    </tr>
+  `).join("");
+
+  $$(".edit-prod-btn").forEach(btn => btn.addEventListener("click", () => openProductModal(parseInt(btn.dataset.id), data)));
+  $$(".delete-prod-btn").forEach(btn => btn.addEventListener("click", () => {
+    const id = parseInt(btn.dataset.id);
+    showConfirm("Delete this product permanently?", () => deleteProduct(id));
+  }));
+}
+
+$("#productSearchInput").addEventListener("input", (e) => { productSearch = e.target.value; renderProductsTable(); });
+$("#productCatFilter").addEventListener("change", (e) => { productCatFilter = e.target.value; renderProductsTable(); });
+
+function openProductModal(id, allProducts) {
+  const isEdit = id != null;
+  $("#productModalTitle").textContent = isEdit ? "Edit Product" : "Add Product";
+  $("#productForm").reset();
+  $("#prodActive").checked = true;
+  $("#prodImgPreview").classList.add("hidden");
+
+  if (isEdit) {
+    const p = (allProducts || []).find(p => p.id === id);
+    if (p) {
+      $("#prodId").value = p.id;
+      $("#prodName").value = p.name;
+      $("#prodCat").value = p.cat;
+      $("#prodEmoji").value = p.emoji || "";
+      $("#prodPrice").value = p.price;
+      $("#prodSale").value = p.sale;
+      $("#prodImg").value = p.img;
+      $("#prodActive").checked = p.active !== false;
+      if (p.img) {
+        $("#prodImgPreview").src = p.img;
+        $("#prodImgPreview").classList.remove("hidden");
+      }
+    }
+  } else {
+    $("#prodId").value = "";
+  }
+  $("#productModalOverlay").classList.remove("hidden");
+}
+function closeProductModal() { $("#productModalOverlay").classList.add("hidden"); }
+
+$("#addProductBtn").addEventListener("click", () => openProductModal(null));
+$("#closeProductModal").addEventListener("click", closeProductModal);
+$("#productModalOverlay").addEventListener("click", (e) => { if (e.target.id === "productModalOverlay") closeProductModal(); });
+
+$("#prodImg").addEventListener("input", () => {
+  const url = $("#prodImg").value.trim();
+  if (url) {
+    $("#prodImgPreview").src = url;
+    $("#prodImgPreview").classList.remove("hidden");
+  } else {
+    $("#prodImgPreview").classList.add("hidden");
+  }
+});
+
+$("#productForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const idVal = $("#prodId").value;
+
+  const productData = {
+    name: $("#prodName").value.trim(),
+    cat: $("#prodCat").value,
+    emoji: $("#prodEmoji").value.trim() || "🛒",
+    price: parseFloat($("#prodPrice").value),
+    sale: parseFloat($("#prodSale").value),
+    img: $("#prodImg").value.trim(),
+    active: $("#prodActive").checked,
+  };
+
+  let error;
+  if (idVal) {
+    ({ error } = await sb.from("products").update(productData).eq("id", parseInt(idVal)));
+  } else {
+    ({ error } = await sb.from("products").insert(productData));
+  }
+
+  if (error) {
+    console.error(error);
+    showToast("⚠️ Failed to save product.");
+    return;
+  }
+
+  showToast(idVal ? "Product updated ✓" : "Product added ✓");
+  closeProductModal();
+  renderProductsTable();
+  renderOverview();
+});
+
+async function deleteProduct(id) {
+  const { error } = await sb.from("products").delete().eq("id", id);
+  if (error) { console.error(error); showToast("⚠️ Failed to delete product."); return; }
+  showToast("Product deleted");
+  renderProductsTable();
+  renderOverview();
+}
+
+/* ===================== CLOUDINARY IMAGE UPLOAD ===================== */
+$("#cloudinaryUploadBtn").addEventListener("click", () => {
+  if (CLOUDINARY_CLOUD_NAME === "YOUR-CLOUD-NAME") {
+    showToast("⚠️ Set your Cloudinary cloud name in the code first.");
+    return;
+  }
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    await uploadToCloudinary(file);
+  };
+  input.click();
+});
+
+async function uploadToCloudinary(file) {
+  $("#uploadingMsg").classList.remove("hidden");
+  $("#cloudinaryUploadBtn").disabled = true;
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (data.secure_url) {
+      $("#prodImg").value = data.secure_url;
+      $("#prodImgPreview").src = data.secure_url;
+      $("#prodImgPreview").classList.remove("hidden");
+      showToast("Image uploaded ✓");
+    } else {
+      console.error("Cloudinary response:", data);
+      showToast("⚠️ Upload failed. Check your preset name.");
+    }
+  } catch (err) {
+    console.error("Cloudinary upload error:", err);
+    showToast("⚠️ Upload failed. Check your connection.");
+  } finally {
+    $("#uploadingMsg").classList.add("hidden");
+    $("#cloudinaryUploadBtn").disabled = false;
+  }
+}
+
+/* ===================== ORDERS ===================== */
+let orderStatusFilter = "all";
+
+async function renderOrdersList() {
+  let query = sb.from("orders").select("*").order("created_at", { ascending: false });
+  if (orderStatusFilter !== "all") query = query.eq("status", orderStatusFilter);
+
+  const { data, error } = await query;
+  if (error) { console.error(error); showToast("⚠️ Couldn't load orders."); return; }
+
+  $("#noOrdersFound").classList.toggle("hidden", data.length > 0);
+
+  $("#ordersList").innerHTML = data.map(o => `
+    <div class="bg-paper rounded-2xl border-2 border-leaf-100 shadow-card p-5">
+      <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
+        <div>
+          <p class="font-mono font-bold text-leaf-900">${o.id}</p>
+          <p class="text-xs text-char-700/60 mt-0.5">${new Date(o.created_at).toLocaleString()}</p>
+        </div>
+        <span class="status-pill ${statusColor(o.status)}">${o.status}</span>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-2 text-sm text-char-700 mb-4">
+        <p><strong>${o.customer_name || "—"}</strong></p>
+        <p>📞 ${o.customer_phone || "—"}</p>
+        <p class="sm:col-span-2 truncate">📍 ${o.customer_address || "—"}</p>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="font-semibold text-leaf-900">${fmt(o.total)} <span class="text-xs text-char-700/60 font-normal">(${(o.payment || "").toUpperCase()})</span></p>
+        <div class="flex items-center gap-2">
+          <select data-id="${o.id}" class="order-status-select text-xs px-3 py-1.5 rounded-full border-2 border-leaf-200 bg-paper focus-ring">
+            <option value="Order Received" ${o.status === "Order Received" ? "selected" : ""}>Order Received</option>
+            <option value="Preparing Your Groceries" ${o.status === "Preparing Your Groceries" ? "selected" : ""}>Preparing</option>
+            <option value="Out for Delivery" ${o.status === "Out for Delivery" ? "selected" : ""}>Out for Delivery</option>
+            <option value="Delivered" ${o.status === "Delivered" ? "selected" : ""}>Delivered</option>
+            <option value="Cancelled" ${o.status === "Cancelled" ? "selected" : ""}>Cancelled</option>
+          </select>
+          <button data-id="${o.id}" class="view-order-btn text-leaf-700 hover:text-leaf-900 font-semibold text-xs focus-ring">View Items</button>
+        </div>
+      </div>
+    </div>
+  `).join("");
+
+  $$(".order-status-select").forEach(sel => sel.addEventListener("change", () => updateOrderStatus(sel.dataset.id, sel.value)));
+  $$(".view-order-btn").forEach(btn => btn.addEventListener("click", () => openOrderModal(btn.dataset.id)));
+}
+
+$("#orderStatusFilter").addEventListener("change", (e) => { orderStatusFilter = e.target.value; renderOrdersList(); });
+
+async function updateOrderStatus(orderId, newStatus) {
+  const { error } = await sb.from("orders").update({ status: newStatus }).eq("id", orderId);
+  if (error) { console.error(error); showToast("⚠️ Failed to update status."); return; }
+  showToast(`Order ${orderId} marked as "${newStatus}"`);
+  renderOrdersList();
+  renderOverview();
+}
+
+async function openOrderModal(orderId) {
+  const { data: o, error } = await sb.from("orders").select("*").eq("id", orderId).single();
+  if (error || !o) { console.error(error); return; }
+
+  $("#orderModalBody").innerHTML = `
+    <div class="space-y-3">
+      <div class="flex justify-between text-char-700"><span>Order ID</span><span class="font-bold text-leaf-900">${o.id}</span></div>
+      <div class="flex justify-between text-char-700"><span>Status</span><span class="status-pill ${statusColor(o.status)} font-mono">${o.status}</span></div>
+      <div class="flex justify-between text-char-700"><span>Payment</span><span>${(o.payment || "—").toUpperCase()}</span></div>
+      <div class="border-t border-dashed border-leaf-200 pt-3">
+        <p class="text-char-700/70 text-xs mb-1">CUSTOMER</p>
+        <p class="text-char-800">${o.customer_name || "—"}</p>
+        <p class="text-char-800">${o.customer_phone || "—"}</p>
+        <p class="text-char-800">${o.customer_address || "—"}</p>
+      </div>
+      <div class="border-t border-dashed border-leaf-200 pt-3">
+        <p class="text-char-700/70 text-xs mb-2">ITEMS</p>
+        ${(o.items || []).map(it => `<div class="flex justify-between text-char-800 mb-1"><span>${it.qty}× ${it.name}</span><span>${fmt(it.price * it.qty)}</span></div>`).join("")}
+      </div>
+      <div class="border-t border-dashed border-leaf-200 pt-3 space-y-1">
+        <div class="flex justify-between text-char-700"><span>Subtotal</span><span>${fmt(o.subtotal)}</span></div>
+        <div class="flex justify-between text-char-700"><span>Delivery</span><span>${Number(o.delivery) === 0 ? "Free" : fmt(o.delivery)}</span></div>
+        <div class="flex justify-between font-bold text-leaf-900 text-base"><span>Total</span><span>${fmt(o.total)}</span></div>
+      </div>
+    </div>
+  `;
+  $("#orderModalOverlay").classList.remove("hidden");
+}
+$("#closeOrderModal").addEventListener("click", () => $("#orderModalOverlay").classList.add("hidden"));
+$("#orderModalOverlay").addEventListener("click", (e) => { if (e.target.id === "orderModalOverlay") $("#orderModalOverlay").classList.add("hidden"); });
+
+/* ===================== SETTINGS ===================== */
+async function loadSettingsForm() {
+  const { data, error } = await sb.from("settings").select("*").eq("id", 1).single();
+  const s = error ? DEFAULT_SETTINGS : mapSettingsRow(data);
+
+  $("#setStoreName").value = s.storeName;
+  $("#setHeroTitle").value = s.heroTitle;
+  $("#setHeroSubtitle").value = s.heroSubtitle;
+  $("#setPhone").value = s.phone;
+  $("#setAddress").value = s.address;
+  $("#setHours").value = s.hours;
+  $("#setDeliveryFee").value = s.deliveryFee;
+  $("#setFreeThreshold").value = s.freeDeliveryThreshold;
+  $("#setNewPassword").value = "";
+}
+
+$("#settingsForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const newSettings = {
+    store_name: $("#setStoreName").value.trim(),
+    hero_title: $("#setHeroTitle").value.trim(),
+    hero_subtitle: $("#setHeroSubtitle").value.trim(),
+    phone: $("#setPhone").value.trim(),
+    address: $("#setAddress").value.trim(),
+    hours: $("#setHours").value.trim(),
+    delivery_fee: parseFloat($("#setDeliveryFee").value) || 0,
+    free_delivery_threshold: parseFloat($("#setFreeThreshold").value) || 0,
+  };
+
+  const { error } = await sb.from("settings").update(newSettings).eq("id", 1);
+
+  if (error) {
+    console.error(error);
+    showToast("⚠️ Failed to save settings.");
+    return;
+  }
+
+  const newPw = $("#setNewPassword").value.trim();
+  if (newPw) {
+    localStorage.setItem(LS_ADMIN_PW, newPw);
+    showToast("Settings & password updated ✓");
+  } else {
+    showToast("Settings saved ✓");
+  }
+
+  $("#settingsSavedMsg").classList.remove("hidden");
+  setTimeout(() => $("#settingsSavedMsg").classList.add("hidden"), 2000);
+  $("#setNewPassword").value = "";
+});
+
+$("#resetDataBtn").addEventListener("click", () => {
+  showConfirm("This will erase ALL orders and restore default settings. Products are kept — delete those manually if needed. Continue?", async () => {
+    await sb.from("settings").update({
+      store_name: DEFAULT_SETTINGS.storeName,
+      hero_title: DEFAULT_SETTINGS.heroTitle,
+      hero_subtitle: DEFAULT_SETTINGS.heroSubtitle,
+      phone: DEFAULT_SETTINGS.phone,
+      address: DEFAULT_SETTINGS.address,
+      hours: DEFAULT_SETTINGS.hours,
+      delivery_fee: DEFAULT_SETTINGS.deliveryFee,
+      free_delivery_threshold: DEFAULT_SETTINGS.freeDeliveryThreshold,
+    }).eq("id", 1);
+    await sb.from("orders").delete().neq("id", "");
+
+    showToast("Settings reset & orders cleared");
+    renderOverview();
+    renderOrdersList();
+    loadSettingsForm();
+  });
+});
+
+/* ===================== INIT ===================== */
+function initDashboard() {
+  styleAdminTabs("overview");
+  renderOverview();
+}
+
+if (isLoggedIn()) {
+  showDashboard();
+} else {
+  showLogin();
+}
+</script>
+
+</body>
+</html>
