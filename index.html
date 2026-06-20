@@ -107,6 +107,12 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
   }
 </style>
+
+<!-- Populated at runtime by applyDesignToDOM() once colors load from Supabase.
+     Using !important + high-specificity overrides on top of Tailwind's static
+     CDN-generated utility classes, since Tailwind's CDN build can't be
+     recompiled at runtime with new admin-chosen hex values. -->
+<style id="dynamicTheme"></style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 
@@ -216,7 +222,7 @@
 
     <div class="relative">
       <div class="relative bg-paper rounded-[2rem] shadow-receipt p-3 rotate-1">
-        <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1200&auto=format&fit=crop" alt="Fresh grocery produce basket with vegetables and fruits" class="rounded-[1.6rem] w-full h-[340px] sm:h-[420px] object-cover" />
+        <img id="heroImage" src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1200&auto=format&fit=crop" alt="Fresh grocery produce basket with vegetables and fruits" class="rounded-[1.6rem] w-full h-[340px] sm:h-[420px] object-cover" />
       </div>
 
       <!-- floating open badge -->
@@ -433,29 +439,8 @@
       <div id="checkoutStep2" class="hidden space-y-4">
         <p class="text-sm font-semibold text-char-800 mb-1">Choose Payment Method</p>
 
-        <label class="flex items-center gap-3 border-2 border-leaf-200 rounded-2xl px-4 py-3.5 cursor-pointer transition-colors has-[:checked]:border-leaf-600 has-[:checked]:bg-leaf-50">
-          <input type="radio" name="payment" value="esewa" class="pay-radio w-4 h-4" checked />
-          <span class="w-9 h-9 rounded-lg bg-leaf-700 text-white grid place-items-center font-bold text-xs">eS</span>
-          <span class="font-semibold text-char-800">eSewa</span>
-        </label>
-
-        <label class="flex items-center gap-3 border-2 border-leaf-200 rounded-2xl px-4 py-3.5 cursor-pointer transition-colors has-[:checked]:border-purple-500 has-[:checked]:bg-purple-50">
-          <input type="radio" name="payment" value="khalti" class="pay-radio w-4 h-4" style="accent-color:#5C2D91" />
-          <span class="w-9 h-9 rounded-lg bg-purple-700 text-white grid place-items-center font-bold text-xs">K</span>
-          <span class="font-semibold text-char-800">Khalti</span>
-        </label>
-
-        <label class="flex items-center gap-3 border-2 border-leaf-200 rounded-2xl px-4 py-3.5 cursor-pointer transition-colors has-[:checked]:border-mango-500 has-[:checked]:bg-mango-50">
-          <input type="radio" name="payment" value="fonepay" class="pay-radio w-4 h-4" style="accent-color:#d68a00" />
-          <span class="w-9 h-9 rounded-lg bg-mango-500 text-white grid place-items-center font-bold text-xs">QR</span>
-          <span class="font-semibold text-char-800">Fonepay / QR Scan</span>
-        </label>
-
-        <label class="flex items-center gap-3 border-2 border-leaf-200 rounded-2xl px-4 py-3.5 cursor-pointer transition-colors has-[:checked]:border-char-700 has-[:checked]:bg-char-900/5">
-          <input type="radio" name="payment" value="cod" class="pay-radio w-4 h-4" style="accent-color:#283128" />
-          <span class="w-9 h-9 rounded-lg bg-char-800 text-white grid place-items-center font-bold text-xs">₨</span>
-          <span class="font-semibold text-char-800">Cash on Delivery</span>
-        </label>
+        <!-- Payment method options are rendered dynamically by renderPaymentMethodOptions() -->
+        <div id="paymentMethodOptions" class="space-y-3"></div>
 
         <!-- dynamic payment preview -->
         <div id="paymentPreview" class="rounded-2xl overflow-hidden border-2 border-leaf-100"></div>
@@ -494,34 +479,61 @@
 <script>
 /* ===================== SUPABASE SETUP ===================== */
 // 🔧 PASTE YOUR SUPABASE PROJECT URL AND ANON KEY HERE 🔧
-const SUPABASE_URL = "https://wzfvucgabbkrblrwmgia.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6ZnZ1Y2dhYmJrcmJscndtZ2lhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5MDQ1NDEsImV4cCI6MjA5NzQ4MDU0MX0.1tI61zYKnw9_d4OMSjt6PE5b7a84DyEeq0-iXv66xPk";
+const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const DEFAULT_SETTINGS = {
   storeName: "Dailekhi Mart",
   phone: "986-6939130",
+  paymentNumber: "9848399501",
   address: "5MMR+4HH, Kohalpur 21904, Nepal",
   hours: "Open 24 Hours / 7 Days a week",
   deliveryFee: 50,
   freeDeliveryThreshold: 1500,
   heroTitle: "Your 24/7 Premium Grocery Partner in Kohalpur",
   heroSubtitle: "Fresh produce, daily essentials, and instant delivery — right to your door, any hour of the day. Pay your way: eSewa, Khalti, Fonepay, or cash on delivery.",
+  heroImage: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1200&auto=format&fit=crop",
+  colorPrimary: "#0F5132",
+  colorAccent: "#F4A300",
+  colorDanger: "#E63946",
+  showHero: true,
+  showShop: true,
+  showAbout: true,
+  showTracking: true,
 };
 
-// Maps a DB settings row (snake_case) to the app's camelCase shape
+const DEFAULT_PAYMENT_METHODS = [
+  { id: "esewa",   label: "eSewa",             type: "wallet", color: "#1f6630", sort_order: 1, active: true },
+  { id: "khalti",  label: "Khalti",            type: "wallet", color: "#5C2D91", sort_order: 2, active: true },
+  { id: "fonepay", label: "Fonepay / QR Scan", type: "qr",      color: "#d68a00", sort_order: 3, active: true },
+  { id: "cod",     label: "Cash on Delivery",  type: "cod",     color: "#283128", sort_order: 4, active: true },
+];
+
+// Maps a DB settings row (snake_case) to the app's camelCase shape.
+// Falls back field-by-field to DEFAULT_SETTINGS so a partially-migrated
+// database (missing a brand-new column) never produces undefined values.
 function mapSettingsRow(row) {
   if (!row) return DEFAULT_SETTINGS;
   return {
-    storeName: row.store_name,
-    phone: row.phone,
-    address: row.address,
-    hours: row.hours,
-    deliveryFee: Number(row.delivery_fee),
-    freeDeliveryThreshold: Number(row.free_delivery_threshold),
-    heroTitle: row.hero_title,
-    heroSubtitle: row.hero_subtitle,
+    storeName: row.store_name ?? DEFAULT_SETTINGS.storeName,
+    phone: row.phone ?? DEFAULT_SETTINGS.phone,
+    paymentNumber: row.payment_number ?? DEFAULT_SETTINGS.paymentNumber,
+    address: row.address ?? DEFAULT_SETTINGS.address,
+    hours: row.hours ?? DEFAULT_SETTINGS.hours,
+    deliveryFee: row.delivery_fee != null ? Number(row.delivery_fee) : DEFAULT_SETTINGS.deliveryFee,
+    freeDeliveryThreshold: row.free_delivery_threshold != null ? Number(row.free_delivery_threshold) : DEFAULT_SETTINGS.freeDeliveryThreshold,
+    heroTitle: row.hero_title ?? DEFAULT_SETTINGS.heroTitle,
+    heroSubtitle: row.hero_subtitle ?? DEFAULT_SETTINGS.heroSubtitle,
+    heroImage: row.hero_image ?? DEFAULT_SETTINGS.heroImage,
+    colorPrimary: row.color_primary ?? DEFAULT_SETTINGS.colorPrimary,
+    colorAccent: row.color_accent ?? DEFAULT_SETTINGS.colorAccent,
+    colorDanger: row.color_danger ?? DEFAULT_SETTINGS.colorDanger,
+    showHero: row.show_hero !== false,
+    showShop: row.show_shop !== false,
+    showAbout: row.show_about !== false,
+    showTracking: row.show_tracking !== false,
   };
 }
 
@@ -539,8 +551,75 @@ function mapProductRow(row) {
   };
 }
 
+// Converts a hex color like "#0F5132" into "r, g, b" for use in rgba() shadows.
+function hexToRgb(hex) {
+  const clean = (hex || "").replace("#", "");
+  if (clean.length !== 6) return "15, 81, 50";
+  const r = parseInt(clean.slice(0, 2), 16);
+  const g = parseInt(clean.slice(2, 4), 16);
+  const b = parseInt(clean.slice(4, 6), 16);
+  if ([r, g, b].some(isNaN)) return "15, 81, 50";
+  return `${r}, ${g}, ${b}`;
+}
+
+// Pushes the current SETTINGS object out to every dynamic placeholder in the DOM
+function applySettingsToDOM() {
+  document.title = SETTINGS.storeName + " — 24/7 Premium Grocery, Kohalpur";
+  $$(".dyn-store-name").forEach(el => el.textContent = SETTINGS.storeName);
+  $$(".dyn-phone").forEach(el => el.textContent = SETTINGS.phone);
+  $$(".dyn-phone-tel").forEach(el => el.setAttribute("href", "tel:" + SETTINGS.phone.replace(/[^0-9]/g, "")));
+  $$(".dyn-address").forEach(el => el.textContent = SETTINGS.address);
+  $$(".dyn-hours").forEach(el => el.textContent = SETTINGS.hours);
+  $$(".dyn-hero-title").forEach(el => el.textContent = SETTINGS.heroTitle);
+  $$(".dyn-hero-subtitle").forEach(el => el.textContent = SETTINGS.heroSubtitle);
+  const gapEl = $("#freeDeliveryGap");
+  if (gapEl) gapEl.textContent = SETTINGS.freeDeliveryThreshold.toLocaleString("en-IN");
+
+  const heroImg = $("#heroImage");
+  if (heroImg && SETTINGS.heroImage) heroImg.src = SETTINGS.heroImage;
+
+  // Section visibility — sections can be fully hidden by the admin without losing their content
+  const sectionMap = { "#home": SETTINGS.showHero, "#shop": SETTINGS.showShop, "#about": SETTINGS.showAbout, "#tracking": SETTINGS.showTracking };
+  Object.entries(sectionMap).forEach(([selector, visible]) => {
+    const el = document.querySelector(selector);
+    if (el) el.classList.toggle("hidden", !visible);
+  });
+}
+
+// Rewrites the brand colors across the whole page by overriding the specific
+// Tailwind utility classes the storefront actually uses. This works because
+// Tailwind's CDN build generates static CSS at page load — we can't ask it to
+// recompile with new colors, so instead we inject higher-specificity rules
+// that override its classes directly, scoped to this page only.
+function applyDesignToDOM() {
+  const primary = SETTINGS.colorPrimary || DEFAULT_SETTINGS.colorPrimary;
+  const accent = SETTINGS.colorAccent || DEFAULT_SETTINGS.colorAccent;
+  const danger = SETTINGS.colorDanger || DEFAULT_SETTINGS.colorDanger;
+  const primaryRgb = hexToRgb(primary);
+
+  const css = `
+    .bg-leaf-900, .bg-leaf-950 { background-color: ${primary} !important; }
+    .hover\\:bg-leaf-800:hover, .hover\\:bg-leaf-900:hover { background-color: ${primary} !important; filter: brightness(0.92); }
+    .text-leaf-900, .text-leaf-950, .text-leaf-700, .text-leaf-800 { color: ${primary} !important; }
+    .border-leaf-900 { border-color: ${primary} !important; }
+    .bg-mango-400 { background-color: ${accent} !important; }
+    .hover\\:bg-mango-500:hover { filter: brightness(0.95); }
+    .text-mango-300, .text-mango-600 { color: ${accent} !important; }
+    .bg-tomato-500 { background-color: ${danger} !important; }
+    .hover\\:bg-tomato-600:hover { filter: brightness(0.92); }
+    .text-tomato-600 { color: ${danger} !important; }
+    .shadow-tag { box-shadow: 2px 3px 0 0 rgba(${primaryRgb}, 0.18) !important; }
+    .shadow-tagHover { box-shadow: 4px 6px 0 0 rgba(${primaryRgb}, 0.22) !important; }
+    .shadow-receipt { box-shadow: 0 12px 40px -8px rgba(${primaryRgb}, 0.35) !important; }
+    .focus-ring:focus-visible { outline-color: ${accent} !important; }
+  `;
+  const styleTag = $("#dynamicTheme");
+  if (styleTag) styleTag.textContent = css;
+}
+
 let PRODUCTS = [];
 let SETTINGS = DEFAULT_SETTINGS;
+let PAYMENT_METHODS = DEFAULT_PAYMENT_METHODS;
 let DELIVERY_FEE = DEFAULT_SETTINGS.deliveryFee;
 let FREE_DELIVERY_THRESHOLD = DEFAULT_SETTINGS.freeDeliveryThreshold;
 
@@ -571,7 +650,20 @@ async function fetchSettings() {
   return mapSettingsRow(data);
 }
 
-// Live updates: if admin changes products/settings, storefront refreshes automatically
+async function fetchPaymentMethods() {
+  const { data, error } = await sb
+    .from("payment_methods")
+    .select("*")
+    .eq("active", true)
+    .order("sort_order", { ascending: true });
+  if (error || !data || data.length === 0) {
+    if (error) console.error("Failed to load payment methods:", error);
+    return DEFAULT_PAYMENT_METHODS;
+  }
+  return data;
+}
+
+// Live updates: if admin changes products/settings/payment methods, storefront refreshes automatically
 function subscribeToLiveUpdates() {
   sb.channel("storefront-products")
     .on("postgres_changes", { event: "*", schema: "public", table: "products" }, async () => {
@@ -586,7 +678,15 @@ function subscribeToLiveUpdates() {
       DELIVERY_FEE = SETTINGS.deliveryFee;
       FREE_DELIVERY_THRESHOLD = SETTINGS.freeDeliveryThreshold;
       applySettingsToDOM();
+      applyDesignToDOM();
       renderCart();
+    })
+    .subscribe();
+
+  sb.channel("storefront-payment-methods")
+    .on("postgres_changes", { event: "*", schema: "public", table: "payment_methods" }, async () => {
+      PAYMENT_METHODS = await fetchPaymentMethods();
+      renderPaymentMethodOptions();
     })
     .subscribe();
 }
@@ -599,7 +699,7 @@ let searchTerm = "";
 /* ===================== UTIL ===================== */
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
-const fmt = (n) => "Rs. " + n.toLocaleString("en-IN");
+const fmt = (n) => "Rs. " + Number(n || 0).toLocaleString("en-IN");
 
 function showToast(msg) {
   const t = $("#toast");
@@ -620,7 +720,12 @@ function addRipple(btn, e) {
   btn.appendChild(circle);
   setTimeout(() => circle.remove(), 650);
 }
-$$(".ripple").forEach(btn => btn.addEventListener("click", (e) => addRipple(btn, e)));
+// Event delegation: works for both static buttons present at load time AND
+// any .ripple button created later (product cards, cart, checkout, tracking).
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".ripple");
+  if (btn) addRipple(btn, e);
+});
 
 /* ===================== RENDER PRODUCTS ===================== */
 function renderProducts() {
@@ -633,17 +738,17 @@ function renderProducts() {
 
   $("#noResults").classList.toggle("hidden", filtered.length !== 0);
   grid.innerHTML = filtered.map(p => {
-    const discountPct = Math.round((1 - p.sale / p.price) * 100);
+    const discountPct = p.price > 0 ? Math.round((1 - p.sale / p.price) * 100) : 0;
     return `
     <div class="group bg-paper rounded-2xl border-2 border-leaf-100 hover:border-leaf-300 p-3 sm:p-4 transition-all hover:shadow-tag flex flex-col">
       <div class="relative rounded-xl overflow-hidden mb-3 aspect-square bg-leaf-50">
-        <img src="${p.img}" alt="${p.name}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        <img src="${p.img}" alt="${p.name}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=400&auto=format&fit=crop';" />
         ${discountPct > 0 ? `<span class="absolute top-2 left-2 bg-tomato-500 text-white text-[0.65rem] font-bold px-2 py-1 rounded-full">-${discountPct}%</span>` : ""}
       </div>
       <h3 class="font-semibold text-char-900 text-sm sm:text-[0.95rem] leading-snug mb-1">${p.emoji} ${p.name}</h3>
       <div class="flex items-baseline gap-2 mb-3">
         <span class="font-display font-bold text-leaf-900 text-base sm:text-lg">${fmt(p.sale)}</span>
-        ${p.price !== p.sale ? `<span class="text-xs text-char-700/50 line-through">${fmt(p.price)}</span>` : ""}
+        ${p.price > p.sale ? `<span class="text-xs text-char-700/50 line-through">${fmt(p.price)}</span>` : ""}
       </div>
       <button data-id="${p.id}" class="ripple add-cart-btn mt-auto w-full bg-leaf-900 hover:bg-leaf-800 text-cream text-sm font-semibold py-2.5 rounded-full transition-colors focus-ring">
         Add to Cart
@@ -652,8 +757,7 @@ function renderProducts() {
   }).join("");
 
   $$(".add-cart-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
-      addRipple(btn, e);
+    btn.addEventListener("click", () => {
       addToCart(parseInt(btn.dataset.id));
     });
   });
@@ -685,8 +789,12 @@ $("#searchInput").addEventListener("input", (e) => {
 
 /* ===================== CART LOGIC ===================== */
 function addToCart(id) {
-  cart[id] = (cart[id] || 0) + 1;
   const product = PRODUCTS.find(p => p.id === id);
+  if (!product) {
+    showToast("⚠️ This item is no longer available.");
+    return;
+  }
+  cart[id] = (cart[id] || 0) + 1;
   showToast(`${product.emoji} ${product.name} added to cart`);
   renderCart();
   bounceCartIcon();
@@ -790,6 +898,7 @@ function openCheckout() {
   closeCart();
   $("#checkoutOverlay").classList.remove("hidden");
   document.body.style.overflow = "hidden";
+  renderPaymentMethodOptions();
   goToStep(1);
 }
 function closeCheckout() {
@@ -826,34 +935,59 @@ function validateStep1() {
 $("#toStep2").addEventListener("click", () => { if (validateStep1()) goToStep(2); });
 $("#backToStep1").addEventListener("click", () => goToStep(1));
 
-function renderPaymentPreview() {
-  const method = document.querySelector('input[name="payment"]:checked').value;
-  const box = $("#paymentPreview");
-  const total = cartTotals().total;
+// Renders the list of selectable payment methods based on admin-managed data.
+// Falls back to DEFAULT_PAYMENT_METHODS if none are loaded yet, so checkout
+// never shows an empty list.
+function renderPaymentMethodOptions() {
+  const container = $("#paymentMethodOptions");
+  if (!container) return;
 
-  if (method === "esewa") {
+  const methods = (PAYMENT_METHODS && PAYMENT_METHODS.length) ? PAYMENT_METHODS : DEFAULT_PAYMENT_METHODS;
+  const previouslyChecked = document.querySelector('input[name="payment"]:checked')?.value;
+
+  container.innerHTML = methods.map((m, i) => {
+    const isChecked = previouslyChecked ? m.id === previouslyChecked : i === 0;
+    const initials = m.type === "cod" ? "₨" : m.type === "qr" ? "QR" : (m.label || "").slice(0, 2).toUpperCase();
+    return `
+    <label class="flex items-center gap-3 border-2 border-leaf-200 rounded-2xl px-4 py-3.5 cursor-pointer transition-colors has-[:checked]:border-leaf-600 has-[:checked]:bg-leaf-50">
+      <input type="radio" name="payment" value="${m.id}" class="pay-radio w-4 h-4" style="accent-color:${m.color || '#185328'}" ${isChecked ? "checked" : ""} />
+      <span class="w-9 h-9 rounded-lg text-white grid place-items-center font-bold text-xs flex-shrink-0" style="background-color:${m.color || '#185328'}">${initials}</span>
+      <span class="font-semibold text-char-800">${m.label}</span>
+    </label>`;
+  }).join("");
+
+  $$('input[name="payment"]').forEach(r => r.addEventListener("change", renderPaymentPreview));
+  renderPaymentPreview();
+}
+
+// Shows a simulated payment screen for whichever method is selected.
+// All wallet/QR methods route to the single admin-configured payment number.
+function renderPaymentPreview() {
+  const checkedInput = document.querySelector('input[name="payment"]:checked');
+  if (!checkedInput) return;
+
+  const methods = (PAYMENT_METHODS && PAYMENT_METHODS.length) ? PAYMENT_METHODS : DEFAULT_PAYMENT_METHODS;
+  const method = methods.find(m => m.id === checkedInput.value) || methods[0];
+  const box = $("#paymentPreview");
+  if (!box || !method) return;
+
+  const total = cartTotals().total;
+  const payNumber = SETTINGS.paymentNumber || DEFAULT_SETTINGS.paymentNumber;
+
+  if (method.type === "wallet") {
     box.innerHTML = `
-      <div class="bg-gradient-to-br from-green-600 to-green-700 text-white p-5">
+      <div class="p-5 text-white" style="background-color:${method.color}">
         <div class="flex items-center justify-between mb-3">
-          <span class="font-display font-bold text-lg">eSewa</span>
+          <span class="font-display font-bold text-lg">${method.label}</span>
           <span class="text-xs bg-white/20 px-2 py-0.5 rounded-full">Simulated</span>
         </div>
         <p class="text-xs opacity-80 mb-1">Amount to Pay</p>
         <p class="font-mono text-2xl font-bold">${fmt(total)}</p>
-        <button type="button" class="mt-4 w-full bg-white text-green-700 font-semibold py-2 rounded-full text-sm">Verify with eSewa ID</button>
+        <p class="text-xs opacity-80 mt-3 mb-1">Pay to ${method.label} Number</p>
+        <p class="font-mono text-lg font-bold tracking-wide">${payNumber}</p>
+        <button type="button" class="mt-4 w-full bg-white font-semibold py-2 rounded-full text-sm" style="color:${method.color}">Verify with ${method.label}</button>
       </div>`;
-  } else if (method === "khalti") {
-    box.innerHTML = `
-      <div class="bg-gradient-to-br from-purple-600 to-purple-800 text-white p-5">
-        <div class="flex items-center justify-between mb-3">
-          <span class="font-display font-bold text-lg">Khalti</span>
-          <span class="text-xs bg-white/20 px-2 py-0.5 rounded-full">Simulated</span>
-        </div>
-        <p class="text-xs opacity-80 mb-1">Amount to Pay</p>
-        <p class="font-mono text-2xl font-bold">${fmt(total)}</p>
-        <button type="button" class="mt-4 w-full bg-white text-purple-700 font-semibold py-2 rounded-full text-sm">Pay with Khalti</button>
-      </div>`;
-  } else if (method === "fonepay") {
+  } else if (method.type === "qr") {
     box.innerHTML = `
       <div class="bg-mango-50 p-5 text-center">
         <p class="text-xs text-char-700/70 mb-3 font-body">Scan with any mobile banking app</p>
@@ -870,20 +1004,20 @@ function renderPaymentPreview() {
           </svg>
         </div>
         <p class="font-mono font-bold text-leaf-900 mt-3">${fmt(total)}</p>
-        <p class="text-xs text-char-700/60 font-body">Fonepay / QR Scan</p>
+        <p class="text-xs text-char-700/60 font-body">${method.label}</p>
+        <p class="text-xs text-char-700/60 font-body mt-1">Number: <span class="font-mono font-semibold">${payNumber}</span></p>
       </div>`;
   } else {
     box.innerHTML = `
       <div class="bg-char-900 text-cream p-5 flex items-center gap-4">
         <span class="text-3xl">💵</span>
         <div>
-          <p class="font-semibold">Cash on Delivery</p>
+          <p class="font-semibold">${method.label}</p>
           <p class="text-xs text-cream/60 font-body">Pay ${fmt(total)} when your order arrives.</p>
         </div>
       </div>`;
   }
 }
-$$('input[name="payment"]').forEach(r => r.addEventListener("change", renderPaymentPreview));
 
 /* ===================== PLACE ORDER ===================== */
 $("#checkoutForm").addEventListener("submit", async (e) => {
@@ -981,10 +1115,13 @@ async function init() {
   DELIVERY_FEE = SETTINGS.deliveryFee;
   FREE_DELIVERY_THRESHOLD = SETTINGS.freeDeliveryThreshold;
   applySettingsToDOM();
+  applyDesignToDOM();
 
   PRODUCTS = await fetchProducts();
   renderProducts();
   renderCart();
+
+  PAYMENT_METHODS = await fetchPaymentMethods();
 
   subscribeToLiveUpdates();
 }
