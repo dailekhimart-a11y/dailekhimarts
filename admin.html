@@ -110,6 +110,9 @@
       <button data-tab="overview" class="admin-tab font-semibold text-sm px-4 py-2 rounded-full whitespace-nowrap transition-colors focus-ring">📊 Overview</button>
       <button data-tab="products" class="admin-tab font-semibold text-sm px-4 py-2 rounded-full whitespace-nowrap transition-colors focus-ring">🛒 Products</button>
       <button data-tab="orders" class="admin-tab font-semibold text-sm px-4 py-2 rounded-full whitespace-nowrap transition-colors focus-ring">📦 Orders</button>
+      <button data-tab="payments" class="admin-tab font-semibold text-sm px-4 py-2 rounded-full whitespace-nowrap transition-colors focus-ring">💳 Payments</button>
+      <button data-tab="design" class="admin-tab font-semibold text-sm px-4 py-2 rounded-full whitespace-nowrap transition-colors focus-ring">🎨 Design</button>
+      <button data-tab="sections" class="admin-tab font-semibold text-sm px-4 py-2 rounded-full whitespace-nowrap transition-colors focus-ring">🧩 Sections</button>
       <button data-tab="settings" class="admin-tab font-semibold text-sm px-4 py-2 rounded-full whitespace-nowrap transition-colors focus-ring">⚙️ Settings</button>
     </nav>
   </header>
@@ -214,14 +217,6 @@
               <label class="block text-sm font-semibold text-char-800 mb-1.5">Store Name</label>
               <input id="setStoreName" type="text" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
             </div>
-            <div>
-              <label class="block text-sm font-semibold text-char-800 mb-1.5">Hero Title (Homepage Banner)</label>
-              <input id="setHeroTitle" type="text" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-char-800 mb-1.5">Hero Subtitle</label>
-              <textarea id="setHeroSubtitle" rows="2" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring resize-none"></textarea>
-            </div>
           </div>
         </div>
 
@@ -229,8 +224,13 @@
           <h3 class="font-display text-lg font-semibold text-leaf-950 mb-4">Contact &amp; Location</h3>
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-semibold text-char-800 mb-1.5">Phone Number</label>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Phone Number (calls)</label>
               <input id="setPhone" type="text" required placeholder="986-6939130" class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Payment Number (eSewa / Khalti / Fonepay)</label>
+              <input id="setPaymentNumber" type="text" required placeholder="9848399501" class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+              <p class="text-xs text-char-700/60 mt-1">Shown to customers at checkout for every payment method.</p>
             </div>
             <div>
               <label class="block text-sm font-semibold text-char-800 mb-1.5">Address</label>
@@ -277,6 +277,129 @@
           <p class="text-sm text-char-700 mb-4">Reset store settings to defaults and permanently delete all order history. Products are not affected — delete those individually from the Products tab. This cannot be undone.</p>
           <button id="resetDataBtn" class="bg-tomato-500 hover:bg-tomato-600 text-white font-semibold px-5 py-2.5 rounded-full text-sm transition-colors focus-ring">Reset All Data</button>
         </div>
+      </div>
+    </section>
+
+    <!-- ============ PAYMENTS TAB ============ -->
+    <section id="tab-payments" class="admin-panel hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h2 class="font-display text-2xl font-semibold text-leaf-950">Payment Methods</h2>
+          <p class="text-sm text-char-700/70 mt-1">Toggle which payment options customers see at checkout. All methods use the Payment Number set in Settings.</p>
+        </div>
+        <button id="addPaymentMethodBtn" class="bg-leaf-900 hover:bg-leaf-800 text-cream font-semibold px-5 py-2.5 rounded-full text-sm transition-colors focus-ring">+ Add Method</button>
+      </div>
+
+      <div id="paymentMethodsList" class="space-y-3 max-w-2xl"></div>
+    </section>
+
+    <!-- ============ DESIGN TAB ============ -->
+    <section id="tab-design" class="admin-panel hidden">
+      <h2 class="font-display text-2xl font-semibold text-leaf-950 mb-6">Design</h2>
+
+      <form id="designForm" class="space-y-8 max-w-2xl">
+
+        <div class="bg-paper rounded-2xl border-2 border-leaf-100 shadow-card p-6">
+          <h3 class="font-display text-lg font-semibold text-leaf-950 mb-4">Homepage Banner (Hero)</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Hero Title</label>
+              <input id="setHeroTitle" type="text" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring" />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Hero Subtitle</label>
+              <textarea id="setHeroSubtitle" rows="2" required class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring resize-none"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Hero Image</label>
+              <div class="flex items-center gap-3 mb-2">
+                <img id="heroImgPreview" src="" alt="" class="w-20 h-14 rounded-lg object-cover border-2 border-leaf-100 hidden" />
+                <button type="button" id="heroCloudinaryUploadBtn" class="bg-mango-400 hover:bg-mango-500 text-leaf-950 font-semibold text-sm px-4 py-2.5 rounded-full transition-colors focus-ring">
+                  📷 Upload to Cloudinary
+                </button>
+                <span id="heroUploadingMsg" class="hidden text-xs text-char-700/70 font-medium">Uploading…</span>
+              </div>
+              <input id="setHeroImage" type="text" required placeholder="https://images.unsplash.com/…" class="w-full px-4 py-2.5 rounded-xl border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring text-xs" />
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-paper rounded-2xl border-2 border-leaf-100 shadow-card p-6">
+          <h3 class="font-display text-lg font-semibold text-leaf-950 mb-4">Brand Colors</h3>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Primary</label>
+              <div class="flex items-center gap-2">
+                <input id="setColorPrimary" type="color" class="w-10 h-10 rounded-lg border-2 border-leaf-200 cursor-pointer" />
+                <input id="setColorPrimaryHex" type="text" class="w-full px-3 py-2 rounded-lg border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring text-xs font-mono" />
+              </div>
+              <p class="text-xs text-char-700/60 mt-1">Buttons, nav, headings</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Accent</label>
+              <div class="flex items-center gap-2">
+                <input id="setColorAccent" type="color" class="w-10 h-10 rounded-lg border-2 border-leaf-200 cursor-pointer" />
+                <input id="setColorAccentHex" type="text" class="w-full px-3 py-2 rounded-lg border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring text-xs font-mono" />
+              </div>
+              <p class="text-xs text-char-700/60 mt-1">Highlights, badges</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-char-800 mb-1.5">Danger</label>
+              <div class="flex items-center gap-2">
+                <input id="setColorDanger" type="color" class="w-10 h-10 rounded-lg border-2 border-leaf-200 cursor-pointer" />
+                <input id="setColorDangerHex" type="text" class="w-full px-3 py-2 rounded-lg border-2 border-leaf-200 focus:border-leaf-500 outline-none focus-ring text-xs font-mono" />
+              </div>
+              <p class="text-xs text-char-700/60 mt-1">Sale tags, errors</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button type="submit" class="bg-leaf-900 hover:bg-leaf-800 text-cream font-semibold px-6 py-3 rounded-full transition-colors focus-ring">Save Design</button>
+          <span id="designSavedMsg" class="hidden text-leaf-700 text-sm font-semibold">✓ Saved!</span>
+        </div>
+      </form>
+    </section>
+
+    <!-- ============ SECTIONS TAB ============ -->
+    <section id="tab-sections" class="admin-panel hidden">
+      <h2 class="font-display text-2xl font-semibold text-leaf-950 mb-2">Homepage Sections</h2>
+      <p class="text-sm text-char-700/70 mb-6">Show or hide entire sections of the storefront without deleting their content.</p>
+
+      <div class="bg-paper rounded-2xl border-2 border-leaf-100 shadow-card divide-y divide-leaf-100 max-w-2xl">
+        <label class="flex items-center justify-between p-5 cursor-pointer">
+          <div>
+            <p class="font-semibold text-char-800">Hero Banner</p>
+            <p class="text-xs text-char-700/60 mt-0.5">The big welcome banner at the top of the homepage</p>
+          </div>
+          <input id="toggleShowHero" type="checkbox" class="w-5 h-5 accent-leaf-700" />
+        </label>
+        <label class="flex items-center justify-between p-5 cursor-pointer">
+          <div>
+            <p class="font-semibold text-char-800">Shop Catalog</p>
+            <p class="text-xs text-char-700/60 mt-0.5">Product grid, search, and category tabs</p>
+          </div>
+          <input id="toggleShowShop" type="checkbox" class="w-5 h-5 accent-leaf-700" />
+        </label>
+        <label class="flex items-center justify-between p-5 cursor-pointer">
+          <div>
+            <p class="font-semibold text-char-800">About Us</p>
+            <p class="text-xs text-char-700/60 mt-0.5">Store story and embedded map</p>
+          </div>
+          <input id="toggleShowAbout" type="checkbox" class="w-5 h-5 accent-leaf-700" />
+        </label>
+        <label class="flex items-center justify-between p-5 cursor-pointer">
+          <div>
+            <p class="font-semibold text-char-800">Order Tracking</p>
+            <p class="text-xs text-char-700/60 mt-0.5">Lets customers check their order status by ID</p>
+          </div>
+          <input id="toggleShowTracking" type="checkbox" class="w-5 h-5 accent-leaf-700" />
+        </label>
+      </div>
+
+      <div class="flex items-center gap-3 mt-6">
+        <button id="saveSectionsBtn" class="bg-leaf-900 hover:bg-leaf-800 text-cream font-semibold px-6 py-3 rounded-full transition-colors focus-ring">Save Sections</button>
+        <span id="sectionsSavedMsg" class="hidden text-leaf-700 text-sm font-semibold">✓ Saved!</span>
       </div>
     </section>
 
@@ -376,15 +499,15 @@
 <script>
 /* ===================== SUPABASE SETUP (must match index.html) ===================== */
 // 🔧 PASTE YOUR SUPABASE PROJECT URL AND ANON KEY HERE 🔧
-const SUPABASE_URL = "https://wzfvucgabbkrblrwmgia.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6ZnZ1Y2dhYmJrcmJscndtZ2lhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5MDQ1NDEsImV4cCI6MjA5NzQ4MDU0MX0.1tI61zYKnw9_d4OMSjt6PE5b7a84DyEeq0-iXv66xPk";
+const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ===================== CLOUDINARY SETUP ===================== */
 // 🔧 PASTE YOUR CLOUDINARY CLOUD NAME AND UNSIGNED UPLOAD PRESET HERE 🔧
-const CLOUDINARY_CLOUD_NAME = "dewz6ueuh";
-const CLOUDINARY_UPLOAD_PRESET = "dailekhi-mart";
+const CLOUDINARY_CLOUD_NAME = "YOUR-CLOUD-NAME";
+const CLOUDINARY_UPLOAD_PRESET = "YOUR-UNSIGNED-PRESET";
 
 const LS_ADMIN_PW = "dkm_admin_pw";          // admin password stays local to this browser (see security note)
 const LS_ADMIN_SESSION = "dkm_admin_session";
@@ -393,20 +516,52 @@ const DEFAULT_PASSWORD = "dailekhi123";
 const DEFAULT_SETTINGS = {
   storeName: "Dailekhi Mart",
   phone: "986-6939130",
+  paymentNumber: "9848399501",
   address: "5MMR+4HH, Kohalpur 21904, Nepal",
   hours: "Open 24 Hours / 7 Days a week",
   deliveryFee: 50,
   freeDeliveryThreshold: 1500,
   heroTitle: "Your 24/7 Premium Grocery Partner in Kohalpur",
   heroSubtitle: "Fresh produce, daily essentials, and instant delivery — right to your door, any hour of the day. Pay your way: eSewa, Khalti, Fonepay, or cash on delivery.",
+  heroImage: "https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1200&auto=format&fit=crop",
+  colorPrimary: "#0F5132",
+  colorAccent: "#F4A300",
+  colorDanger: "#E63946",
+  showHero: true,
+  showShop: true,
+  showAbout: true,
+  showTracking: true,
 };
 
+const DEFAULT_PAYMENT_METHODS = [
+  { id: "esewa",   label: "eSewa",             type: "wallet", color: "#1f6630", sort_order: 1, active: true },
+  { id: "khalti",  label: "Khalti",            type: "wallet", color: "#5C2D91", sort_order: 2, active: true },
+  { id: "fonepay", label: "Fonepay / QR Scan", type: "qr",      color: "#d68a00", sort_order: 3, active: true },
+  { id: "cod",     label: "Cash on Delivery",  type: "cod",     color: "#283128", sort_order: 4, active: true },
+];
+
+// Field-by-field fallback so a partially-migrated database (missing a
+// brand-new column) never produces undefined values in the admin form.
 function mapSettingsRow(row) {
   if (!row) return DEFAULT_SETTINGS;
   return {
-    storeName: row.store_name, phone: row.phone, address: row.address, hours: row.hours,
-    deliveryFee: Number(row.delivery_fee), freeDeliveryThreshold: Number(row.free_delivery_threshold),
-    heroTitle: row.hero_title, heroSubtitle: row.hero_subtitle,
+    storeName: row.store_name ?? DEFAULT_SETTINGS.storeName,
+    phone: row.phone ?? DEFAULT_SETTINGS.phone,
+    paymentNumber: row.payment_number ?? DEFAULT_SETTINGS.paymentNumber,
+    address: row.address ?? DEFAULT_SETTINGS.address,
+    hours: row.hours ?? DEFAULT_SETTINGS.hours,
+    deliveryFee: row.delivery_fee != null ? Number(row.delivery_fee) : DEFAULT_SETTINGS.deliveryFee,
+    freeDeliveryThreshold: row.free_delivery_threshold != null ? Number(row.free_delivery_threshold) : DEFAULT_SETTINGS.freeDeliveryThreshold,
+    heroTitle: row.hero_title ?? DEFAULT_SETTINGS.heroTitle,
+    heroSubtitle: row.hero_subtitle ?? DEFAULT_SETTINGS.heroSubtitle,
+    heroImage: row.hero_image ?? DEFAULT_SETTINGS.heroImage,
+    colorPrimary: row.color_primary ?? DEFAULT_SETTINGS.colorPrimary,
+    colorAccent: row.color_accent ?? DEFAULT_SETTINGS.colorAccent,
+    colorDanger: row.color_danger ?? DEFAULT_SETTINGS.colorDanger,
+    showHero: row.show_hero !== false,
+    showShop: row.show_shop !== false,
+    showAbout: row.show_about !== false,
+    showTracking: row.show_tracking !== false,
   };
 }
 function mapProductRow(row) {
@@ -491,6 +646,9 @@ $$(".admin-tab").forEach(tab => {
     if (tab.dataset.tab === "overview") await renderOverview();
     if (tab.dataset.tab === "products") await renderProductsTable();
     if (tab.dataset.tab === "orders") await renderOrdersList();
+    if (tab.dataset.tab === "payments") await renderPaymentMethodsList();
+    if (tab.dataset.tab === "design") await loadDesignForm();
+    if (tab.dataset.tab === "sections") await loadSectionsForm();
     if (tab.dataset.tab === "settings") await loadSettingsForm();
   });
 });
@@ -672,7 +830,7 @@ async function deleteProduct(id) {
   renderOverview();
 }
 
-/* ===================== CLOUDINARY IMAGE UPLOAD ===================== */
+/* ===================== CLOUDINARY IMAGE UPLOAD (product photos) ===================== */
 $("#cloudinaryUploadBtn").addEventListener("click", () => {
   if (CLOUDINARY_CLOUD_NAME === "YOUR-CLOUD-NAME") {
     showToast("⚠️ Set your Cloudinary cloud name in the code first.");
@@ -684,43 +842,10 @@ $("#cloudinaryUploadBtn").addEventListener("click", () => {
   input.onchange = async () => {
     const file = input.files[0];
     if (!file) return;
-    await uploadToCloudinary(file);
+    await uploadToCloudinaryGeneric(file, "#prodImg", "#prodImgPreview", "#uploadingMsg", "#cloudinaryUploadBtn");
   };
   input.click();
 });
-
-async function uploadToCloudinary(file) {
-  $("#uploadingMsg").classList.remove("hidden");
-  $("#cloudinaryUploadBtn").disabled = true;
-
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-
-    if (data.secure_url) {
-      $("#prodImg").value = data.secure_url;
-      $("#prodImgPreview").src = data.secure_url;
-      $("#prodImgPreview").classList.remove("hidden");
-      showToast("Image uploaded ✓");
-    } else {
-      console.error("Cloudinary response:", data);
-      showToast("⚠️ Upload failed. Check your preset name.");
-    }
-  } catch (err) {
-    console.error("Cloudinary upload error:", err);
-    showToast("⚠️ Upload failed. Check your connection.");
-  } finally {
-    $("#uploadingMsg").classList.add("hidden");
-    $("#cloudinaryUploadBtn").disabled = false;
-  }
-}
 
 /* ===================== ORDERS ===================== */
 let orderStatusFilter = "all";
@@ -815,9 +940,8 @@ async function loadSettingsForm() {
   const s = error ? DEFAULT_SETTINGS : mapSettingsRow(data);
 
   $("#setStoreName").value = s.storeName;
-  $("#setHeroTitle").value = s.heroTitle;
-  $("#setHeroSubtitle").value = s.heroSubtitle;
   $("#setPhone").value = s.phone;
+  $("#setPaymentNumber").value = s.paymentNumber;
   $("#setAddress").value = s.address;
   $("#setHours").value = s.hours;
   $("#setDeliveryFee").value = s.deliveryFee;
@@ -829,9 +953,8 @@ $("#settingsForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const newSettings = {
     store_name: $("#setStoreName").value.trim(),
-    hero_title: $("#setHeroTitle").value.trim(),
-    hero_subtitle: $("#setHeroSubtitle").value.trim(),
     phone: $("#setPhone").value.trim(),
+    payment_number: $("#setPaymentNumber").value.trim(),
     address: $("#setAddress").value.trim(),
     hours: $("#setHours").value.trim(),
     delivery_fee: parseFloat($("#setDeliveryFee").value) || 0,
@@ -860,16 +983,25 @@ $("#settingsForm").addEventListener("submit", async (e) => {
 });
 
 $("#resetDataBtn").addEventListener("click", () => {
-  showConfirm("This will erase ALL orders and restore default settings. Products are kept — delete those manually if needed. Continue?", async () => {
+  showConfirm("This will erase ALL orders and restore default settings & design. Products and payment methods are kept — manage those from their own tabs. Continue?", async () => {
     await sb.from("settings").update({
       store_name: DEFAULT_SETTINGS.storeName,
-      hero_title: DEFAULT_SETTINGS.heroTitle,
-      hero_subtitle: DEFAULT_SETTINGS.heroSubtitle,
       phone: DEFAULT_SETTINGS.phone,
+      payment_number: DEFAULT_SETTINGS.paymentNumber,
       address: DEFAULT_SETTINGS.address,
       hours: DEFAULT_SETTINGS.hours,
       delivery_fee: DEFAULT_SETTINGS.deliveryFee,
       free_delivery_threshold: DEFAULT_SETTINGS.freeDeliveryThreshold,
+      hero_title: DEFAULT_SETTINGS.heroTitle,
+      hero_subtitle: DEFAULT_SETTINGS.heroSubtitle,
+      hero_image: DEFAULT_SETTINGS.heroImage,
+      color_primary: DEFAULT_SETTINGS.colorPrimary,
+      color_accent: DEFAULT_SETTINGS.colorAccent,
+      color_danger: DEFAULT_SETTINGS.colorDanger,
+      show_hero: DEFAULT_SETTINGS.showHero,
+      show_shop: DEFAULT_SETTINGS.showShop,
+      show_about: DEFAULT_SETTINGS.showAbout,
+      show_tracking: DEFAULT_SETTINGS.showTracking,
     }).eq("id", 1);
     await sb.from("orders").delete().neq("id", "");
 
@@ -877,8 +1009,237 @@ $("#resetDataBtn").addEventListener("click", () => {
     renderOverview();
     renderOrdersList();
     loadSettingsForm();
+    loadDesignForm();
+    loadSectionsForm();
   });
 });
+
+/* ===================== DESIGN (hero content/image + brand colors) ===================== */
+async function loadDesignForm() {
+  const { data, error } = await sb.from("settings").select("*").eq("id", 1).single();
+  const s = error ? DEFAULT_SETTINGS : mapSettingsRow(data);
+
+  $("#setHeroTitle").value = s.heroTitle;
+  $("#setHeroSubtitle").value = s.heroSubtitle;
+  $("#setHeroImage").value = s.heroImage;
+  if (s.heroImage) {
+    $("#heroImgPreview").src = s.heroImage;
+    $("#heroImgPreview").classList.remove("hidden");
+  }
+
+  $("#setColorPrimary").value = s.colorPrimary;
+  $("#setColorPrimaryHex").value = s.colorPrimary;
+  $("#setColorAccent").value = s.colorAccent;
+  $("#setColorAccentHex").value = s.colorAccent;
+  $("#setColorDanger").value = s.colorDanger;
+  $("#setColorDangerHex").value = s.colorDanger;
+}
+
+// Keep the color picker and the hex text field in sync, both directions.
+function syncColorInputs(colorId, hexId) {
+  const colorInput = $(colorId);
+  const hexInput = $(hexId);
+  colorInput.addEventListener("input", () => { hexInput.value = colorInput.value; });
+  hexInput.addEventListener("input", () => {
+    if (/^#[0-9A-Fa-f]{6}$/.test(hexInput.value)) colorInput.value = hexInput.value;
+  });
+}
+syncColorInputs("#setColorPrimary", "#setColorPrimaryHex");
+syncColorInputs("#setColorAccent", "#setColorAccentHex");
+syncColorInputs("#setColorDanger", "#setColorDangerHex");
+
+$("#setHeroImage").addEventListener("input", () => {
+  const url = $("#setHeroImage").value.trim();
+  if (url) {
+    $("#heroImgPreview").src = url;
+    $("#heroImgPreview").classList.remove("hidden");
+  } else {
+    $("#heroImgPreview").classList.add("hidden");
+  }
+});
+
+$("#heroCloudinaryUploadBtn").addEventListener("click", () => {
+  if (CLOUDINARY_CLOUD_NAME === "YOUR-CLOUD-NAME") {
+    showToast("⚠️ Set your Cloudinary cloud name in the code first.");
+    return;
+  }
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.onchange = async () => {
+    const file = input.files[0];
+    if (!file) return;
+    await uploadToCloudinaryGeneric(file, "#setHeroImage", "#heroImgPreview", "#heroUploadingMsg", "#heroCloudinaryUploadBtn");
+  };
+  input.click();
+});
+
+function isValidHex(hex) {
+  return /^#[0-9A-Fa-f]{6}$/.test(hex || "");
+}
+
+$("#designForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const heroImage = $("#setHeroImage").value.trim();
+  const colorPrimary = $("#setColorPrimaryHex").value.trim();
+  const colorAccent = $("#setColorAccentHex").value.trim();
+  const colorDanger = $("#setColorDangerHex").value.trim();
+
+  if (!isValidHex(colorPrimary) || !isValidHex(colorAccent) || !isValidHex(colorDanger)) {
+    showToast("⚠️ Colors must be valid hex codes, e.g. #0F5132.");
+    return;
+  }
+
+  const { error } = await sb.from("settings").update({
+    hero_title: $("#setHeroTitle").value.trim(),
+    hero_subtitle: $("#setHeroSubtitle").value.trim(),
+    hero_image: heroImage,
+    color_primary: colorPrimary,
+    color_accent: colorAccent,
+    color_danger: colorDanger,
+  }).eq("id", 1);
+
+  if (error) {
+    console.error(error);
+    showToast("⚠️ Failed to save design.");
+    return;
+  }
+
+  showToast("Design saved ✓");
+  $("#designSavedMsg").classList.remove("hidden");
+  setTimeout(() => $("#designSavedMsg").classList.add("hidden"), 2000);
+  renderOverview();
+});
+
+/* ===================== SECTIONS (homepage visibility toggles) ===================== */
+async function loadSectionsForm() {
+  const { data, error } = await sb.from("settings").select("*").eq("id", 1).single();
+  const s = error ? DEFAULT_SETTINGS : mapSettingsRow(data);
+
+  $("#toggleShowHero").checked = s.showHero;
+  $("#toggleShowShop").checked = s.showShop;
+  $("#toggleShowAbout").checked = s.showAbout;
+  $("#toggleShowTracking").checked = s.showTracking;
+}
+
+$("#saveSectionsBtn").addEventListener("click", async () => {
+  const { error } = await sb.from("settings").update({
+    show_hero: $("#toggleShowHero").checked,
+    show_shop: $("#toggleShowShop").checked,
+    show_about: $("#toggleShowAbout").checked,
+    show_tracking: $("#toggleShowTracking").checked,
+  }).eq("id", 1);
+
+  if (error) {
+    console.error(error);
+    showToast("⚠️ Failed to save sections.");
+    return;
+  }
+
+  showToast("Sections saved ✓");
+  $("#sectionsSavedMsg").classList.remove("hidden");
+  setTimeout(() => $("#sectionsSavedMsg").classList.add("hidden"), 2000);
+});
+
+/* ===================== PAYMENT METHODS ===================== */
+async function renderPaymentMethodsList() {
+  const { data, error } = await sb.from("payment_methods").select("*").order("sort_order", { ascending: true });
+  if (error) { console.error(error); showToast("⚠️ Couldn't load payment methods."); return; }
+
+  const methods = (data && data.length) ? data : DEFAULT_PAYMENT_METHODS;
+
+  $("#paymentMethodsList").innerHTML = methods.map(m => `
+    <div class="bg-paper rounded-2xl border-2 border-leaf-100 shadow-card p-4 flex items-center gap-4">
+      <span class="w-10 h-10 rounded-lg text-white grid place-items-center font-bold text-xs flex-shrink-0" style="background-color:${m.color}">
+        ${m.type === "cod" ? "₨" : m.type === "qr" ? "QR" : (m.label || "").slice(0,2).toUpperCase()}
+      </span>
+      <div class="flex-1 min-w-0">
+        <input data-id="${m.id}" data-field="label" value="${m.label}" class="pm-field font-semibold text-char-800 w-full bg-transparent border-0 outline-none focus:underline" />
+        <p class="text-xs text-char-700/60">Type: ${m.type} · Order: ${m.sort_order}</p>
+      </div>
+      <input type="color" data-id="${m.id}" data-field="color" value="${m.color}" class="pm-field w-9 h-9 rounded-lg border-2 border-leaf-200 cursor-pointer flex-shrink-0" />
+      <label class="flex items-center gap-1.5 text-xs font-semibold text-char-700 flex-shrink-0">
+        <input type="checkbox" data-id="${m.id}" data-field="active" class="pm-field w-4 h-4 accent-leaf-700" ${m.active !== false ? "checked" : ""} />
+        Active
+      </label>
+      <button data-id="${m.id}" class="delete-pm-btn text-tomato-600 hover:text-tomato-700 font-semibold text-xs flex-shrink-0">Delete</button>
+    </div>
+  `).join("");
+
+  $$(".pm-field").forEach(input => {
+    input.addEventListener("change", async () => {
+      const id = input.dataset.id;
+      const field = input.dataset.field;
+      const value = field === "active" ? input.checked : input.value.trim();
+      const { error } = await sb.from("payment_methods").update({ [field]: value }).eq("id", id);
+      if (error) { console.error(error); showToast("⚠️ Failed to update."); return; }
+      showToast("Updated ✓");
+      if (field === "color" || field === "active") renderPaymentMethodsList();
+    });
+  });
+
+  $$(".delete-pm-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      showConfirm("Delete this payment method?", async () => {
+        const { error } = await sb.from("payment_methods").delete().eq("id", btn.dataset.id);
+        if (error) { console.error(error); showToast("⚠️ Failed to delete."); return; }
+        showToast("Payment method deleted");
+        renderPaymentMethodsList();
+      });
+    });
+  });
+}
+
+$("#addPaymentMethodBtn").addEventListener("click", () => {
+  showConfirm("Add a new payment method called 'New Method'? You can rename it after adding.", async () => {
+    const { data: existing } = await sb.from("payment_methods").select("id, sort_order").order("sort_order", { ascending: false }).limit(1);
+    const nextOrder = existing && existing.length ? existing[0].sort_order + 1 : 1;
+    const newId = "method_" + Date.now();
+
+    const { error } = await sb.from("payment_methods").insert({
+      id: newId, label: "New Method", type: "wallet", color: "#0F5132", sort_order: nextOrder, active: true,
+    });
+
+    if (error) { console.error(error); showToast("⚠️ Failed to add method."); return; }
+    showToast("Payment method added ✓");
+    renderPaymentMethodsList();
+  });
+});
+
+/* ===================== GENERIC CLOUDINARY UPLOAD (shared by product & hero image uploaders) ===================== */
+async function uploadToCloudinaryGeneric(file, targetInputSel, previewImgSel, uploadingMsgSel, btnSel) {
+  $(uploadingMsgSel).classList.remove("hidden");
+  $(btnSel).disabled = true;
+
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+      method: "POST",
+      body: formData,
+    });
+    const data = await res.json();
+
+    if (data.secure_url) {
+      $(targetInputSel).value = data.secure_url;
+      $(previewImgSel).src = data.secure_url;
+      $(previewImgSel).classList.remove("hidden");
+      showToast("Image uploaded ✓");
+    } else {
+      console.error("Cloudinary response:", data);
+      showToast("⚠️ Upload failed. Check your preset name.");
+    }
+  } catch (err) {
+    console.error("Cloudinary upload error:", err);
+    showToast("⚠️ Upload failed. Check your connection.");
+  } finally {
+    $(uploadingMsgSel).classList.add("hidden");
+    $(btnSel).disabled = false;
+  }
+}
 
 /* ===================== INIT ===================== */
 function initDashboard() {
